@@ -1,20 +1,20 @@
-from PIL import Image
 import pytesseract
-import os
+
+from preparing import Preparing
+from services import get_images_name, add_image_name, write_output_data, \
+    get_all_images_name, get_text_from_image
 
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 source = 'images/'
+file_name = 'images_list.json'
+preparing = Preparing(source=source, file_name=file_name)
+preparing.start_preparing()
 language = 'rus+eng'
 
-with open('images_list.txt', 'r') as list_file:
-    images_list = list_file.read()
 
-for image_url in os.listdir(source):
-    if image_url not in images_list:
-        with open('images_list.txt', 'a') as list_file:
-            list_file.write(image_url)
-        image = Image.open(source + image_url)
-        resized_image = image.resize(tuple(map(lambda x: 2 * x, image.size)))
-        text = pytesseract.image_to_string(resized_image, lang=language)
-        with open(f'output.txt', 'a', encoding='utf-8') as text_file:
-            text_file.write(text)
+for image_name in get_all_images_name():
+    if image_name not in get_images_name():
+        add_image_name(image_name)
+        image_url = source + image_name
+        text = get_text_from_image(image_url)
+        write_output_data(text)
