@@ -7,13 +7,18 @@ from preparing import Preparing
 
 
 class ProcessedImage(Preparing):
+    image_extensions = ['jpeg', 'png', 'jpg', 'gif', 'webp']
+
     def __init__(self, image_name):
         self.image_name = image_name
+        if not os.path.exists(self.image_url):
+            raise FileNotFoundError(f'"{self.image_name}"')
 
     def __str__(self):
         return self.image_name
 
-    def get_image_url(self) -> str:
+    @property
+    def image_url(self) -> str:
         return self.source + self.image_name
 
     @classmethod
@@ -23,14 +28,21 @@ class ProcessedImage(Preparing):
         return images_list
 
     @classmethod
-    def get_all(cls) -> list:
-        return os.listdir(cls.source)
+    def get_all_images(cls) -> list:
+        files = [image for image in os.listdir(cls.source)
+                 if image.split('.')[-1] in cls.image_extensions]
+        return files
 
     def add_processed_image(self) -> None:
         images_list = self.get_processed_images()
         images_list.append(self.image_name)
         with open(self.file_name, 'w') as list_file:
             json.dump(images_list, list_file)
+
+    def get_resized_image(self):
+        image = Image.open(self.image_url)
+        resized_image = image.resize(tuple(map(lambda x: 2 * x, image.size)))
+        return resized_image
 
 
 class ImageService(Preparing):
@@ -46,14 +58,14 @@ class ImageService(Preparing):
         with open(self.output_file, 'a', encoding='utf-8') as text_file:
             text_file.write(text)
 
-    def get_text_from_image(self, image_url: str) -> str:
-        image = Image.open(image_url)
-        resized_image = image.resize(tuple(map(lambda x: 2 * x, image.size)))
-        text = pytesseract.image_to_string(resized_image, lang=self.language)
+    def get_text_from_image(self, image: ProcessedImage) -> str:
+        text = pytesseract.image_to_string(image.get_resized_image(),
+                                           lang=self.language)
         return text
 
     def start_processing(self, image: ProcessedImage) -> None:
         if image.image_name not in image.get_processed_images():
             image.add_processed_image()
-            text = self.get_text_from_image(image.get_image_url())
+            text = self.get_text_from_image(image)
             self.write_output_data(text)
+            print(f'Изображение "{image}" обработано!')
