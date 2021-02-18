@@ -10,6 +10,7 @@ class ProcessedImage(Preparing):
     image_extensions = ['jpeg', 'png', 'jpg', 'gif', 'webp']
 
     def __init__(self, image_name):
+        super().__init__()
         self.image_name = image_name
         if not os.path.exists(self.image_url):
             raise FileNotFoundError(f'"{self.image_name}"')
@@ -46,12 +47,10 @@ class ProcessedImage(Preparing):
 
 
 class ImageService(Preparing):
-    pytesseract.pytesseract.tesseract_cmd = \
-        r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
     def __init__(self, output_file: str = 'output.txt',
                  language: str = 'rus+eng'):
-        self.output_file = output_file
+        super().__init__(output_file)
         self.language = language
 
     def write_output_data(self, text: str) -> None:
@@ -69,3 +68,24 @@ class ImageService(Preparing):
             text = self.get_text_from_image(image)
             self.write_output_data(text)
             print(f'Изображение "{image}" обработано!')
+
+    def delete_processed_images(self) -> None:
+        images_list = ProcessedImage.get_processed_images()
+        for image in images_list:
+            os.remove(self.source + image)
+        print(f"Все изображения в папке '{self.source}' удалены")
+
+    def clear_processed_images_file(self) -> None:
+        with open(self.file_name, 'w') as file:
+            json.dump([], file)
+        print("Названия обработаных изображений удалены")
+
+    def clear_output_file(self) -> None:
+        open(self.output_file, 'w').close()
+        print(f"Файл '{self.output_file}' пуст")
+
+    def start_cleaning(self):
+        self.delete_processed_images()
+        self.clear_processed_images_file()
+        self.clear_output_file()
+

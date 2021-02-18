@@ -6,6 +6,10 @@ class Preparing:
     source = 'images/'
     file_name = 'images_list.json'
 
+    def __init__(self, output_file: str = 'output.txt'):
+        self.output_file = output_file
+        self.start_preparing()
+
     def create_images_dir(self) -> None:
         if not os.path.exists(self.source):
             os.mkdir(self.source)
