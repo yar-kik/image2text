@@ -3,11 +3,8 @@ import json
 
 
 class Preparing:
-    def __init__(self, *, source: str = 'images/',
-                 file_name: str = 'images_list.json'):
-        self.source = source
-        self.file_name = file_name
-        self.start_preparing()
+    source = 'images/'
+    file_name = 'images_list.json'
 
     def create_images_dir(self) -> None:
         if not os.path.exists(self.source):

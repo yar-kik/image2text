@@ -1,19 +1,10 @@
-import pytesseract
+from services import ImageService, ProcessedImage
 
-from preparing import Preparing
-from services import get_processed_images, add_new_image, write_output_data, \
-    get_all_images_in_source, get_text_from_image
+language = 'ukr'
+image_service = ImageService(language=language)
+image_service.start_preparing()
+all_images_in_source = ProcessedImage.get_all()
 
-source = 'images/'
-file_name = 'images_list.json'
-preparing = Preparing(source=source, file_name=file_name)
-preparing.start_preparing()
-language = 'rus+eng'
-
-
-for image_name in get_all_images_in_source():
-    if image_name not in get_processed_images():
-        add_new_image(image_name)
-        image_url = source + image_name
-        text = get_text_from_image(image_url)
-        write_output_data(text)
+for image_name in all_images_in_source:
+    processed_images = ProcessedImage(image_name)
+    image_service.start_processing(processed_images)

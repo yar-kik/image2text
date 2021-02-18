@@ -1,3 +1,4 @@
 
 class Cleaner:
-    pass
+    def delete_images(self):
+        pass
