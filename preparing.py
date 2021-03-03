@@ -3,16 +3,10 @@ import json
 
 
 class Preparing:
-    source = 'images/'
-    file_name = 'images_list.json'
 
-    def __init__(self, output_file: str = 'output.txt'):
-        self.output_file = output_file
+    def __init__(self, file_name: str = 'images_list.json'):
+        self.file_name = file_name
         self.start_preparing()
-
-    def create_images_dir(self) -> None:
-        if not os.path.exists(self.source):
-            os.mkdir(self.source)
 
     def create_file_for_images(self) -> None:
         if not os.path.exists(self.file_name):
@@ -20,5 +14,4 @@ class Preparing:
                 json.dump([], file)
 
     def start_preparing(self):
-        self.create_images_dir()
         self.create_file_for_images()
