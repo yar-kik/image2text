@@ -31,7 +31,7 @@ class ProcessedImage(Preparing):
     @classmethod
     def get_all_images(cls) -> list:
         files = [image for image in os.listdir(cls.source)
-                 if image.split('.')[-1] in cls.image_extensions]
+                 if image.split('.')[-1].lower() in cls.image_extensions]
         return files
 
     def add_processed_image(self) -> None:
