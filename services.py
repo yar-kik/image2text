@@ -2,6 +2,7 @@ import json
 import os
 from PIL import Image
 import pytesseract
+import re
 
 from preparing import Preparing
 
@@ -10,6 +11,7 @@ class ProcessedImage:
     """
     Class for image that will process
     """
+
     def __init__(self, source: str, image_name: str):
         self.source = source
         self.image_name = image_name
@@ -48,6 +50,8 @@ class DirectoryImage:
         self.source = source
         if not os.path.exists(source):
             raise FileNotFoundError(f'"{source}"')
+        if not os.path.exists(self.file_name):
+            self.clear_processed_images_file()
 
     def get_processed_images(self) -> list:
         """
@@ -82,7 +86,7 @@ class DirectoryImage:
         Delete processed images from source directory
         :return:
         """
-        images_list = self.get_processed_images()
+        images_list = self.get_all_images()
         for image in images_list:
             os.remove(self.source + image)
         print(f"Все изображения в папке '{self.source}' удалены")
@@ -101,6 +105,7 @@ class Service:
     """
     Class to make main function (get text from image)
     """
+
     def __init__(self, output_file: str, language: str, source: str):
         self.output_file = output_file
         if not output_file.endswith('.txt'):
@@ -130,6 +135,18 @@ class Service:
                                            lang=self.language)
         return text
 
+    def replace_symbol(self, text: str) -> str:
+        """
+        Replace symbol in text to necessary.
+        :param text:
+        :return:
+        """
+        text = re.sub(r'(?<=\S)\n(?=\S)', ' ', text)
+        text = re.sub(r'- ', '', text)
+        text = re.sub(r'', '\n', text).replace('\n\n', '\n\t')
+
+        return text
+
     def start_processing(self, image: ProcessedImage) -> None:
         """
         Start getting text from image
@@ -139,6 +156,7 @@ class Service:
         if image.image_name not in self.directory.get_processed_images():
             self.directory.add_processed_image(image)
             text = self.get_text_from_image(image)
+            text = self.replace_symbol(text)
             self.write_output_data(text)
             print(f'Изображение "{image}" обработано!')
 
@@ -157,5 +175,5 @@ class Service:
         :return: None
         """
         # self.delete_processed_images()
-        # self.clear_processed_images_file()
+        self.directory.clear_processed_images_file()
         self.clear_output_file()
